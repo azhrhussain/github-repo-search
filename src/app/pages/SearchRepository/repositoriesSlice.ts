@@ -5,12 +5,14 @@ import { searchRepositories } from "./service";
 
 interface RepositoriesState {
     items: Repository[];
+    totalCount: number | undefined;
     loading: boolean;
     error: string | null;
 }
 
 const initialState: RepositoriesState = {
     items: [],
+    totalCount: undefined,
     loading: false,
     error: null,
 
@@ -20,8 +22,9 @@ export const repositoriesSlice = createSlice({
     name: "repositories",
     initialState,
     reducers: {
-        setRepositories: (state, action: PayloadAction<Repository[]>) => {
-            state.items = action.payload;
+        setRepositories: (state, action: PayloadAction<{total_count:number, items:Repository[]}>) => {
+            state.items = action.payload?.items;
+            state.totalCount = action.payload.total_count;
             state.loading = false;
             state.error = null;
         },
@@ -38,11 +41,11 @@ export const repositoriesSlice = createSlice({
 
 export const { setRepositories, setLoading, setError } = repositoriesSlice.actions;
 
-export const fetchRepositories = (query: string): AppThunk => async (dispatch: any) => {
+export const fetchRepositories = (query: string, page: number, pageSize:number): AppThunk => async (dispatch: any) => {
     dispatch(setLoading());
     try {
-        const result = await searchRepositories(query);
-        dispatch(setRepositories(result.items));
+        const result = await searchRepositories(query, page, pageSize);
+        dispatch(setRepositories(result));
     } catch (error: any) {
         dispatch(setError(error.message));
     }
