@@ -1,15 +1,18 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from 'react-router-dom';
-import { Col, Pagination, Row } from "antd";
+import { Col, Pagination, Row, Typography } from "antd";
+import { throttle } from "lodash";
+
+import { RootState } from "../../../store";
 import RepositoryList from "../../components/molecules/RepositoryList";
 import CenteredSpinner from "../../components/atoms/CenteredSpinner";
-import { RootState } from "../../../store";
 import SearchBar from "../../components/molecules/SearchBar";
-import { fetchRepositories } from "./repositoriesSlice";
-import { throttle } from "lodash";
+import { fetchRepositories } from "../../feature/Repository/repositoriesSlice";
 import StyledComponentHeader, { StyledLine, StyledResultSortingHeader } from "../../components/atoms/ComponentHeader/ComponentHeader.styled";
+import { StyledWrapper } from "./index.styled";
 
+const { Text } = Typography;
 
 export default function SearchRepository() {
   const [query, setQuery] = useState('');
@@ -18,21 +21,11 @@ export default function SearchRepository() {
   const [pageSize, setPageSize] = useState(5);
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Get a specific parameter
-  const q = searchParams.get('q');
-
-  // Log the searchParams object to see all query parameters
-  console.log('searchParams:: ', searchParams, q);
-
   const dispatch: any = useDispatch();
   const { items, totalCount, loading, error } = useSelector((state: RootState) => state.repositories);
 
   const handleSearch = (query: string, page: number = currentPage || 1, pSize: number = pageSize || 10) => {
-    console.log('pageSize:', pageSize)
     if (query !== '') {
-      setSearchParams({ q: query, page: page.toString(), per_page: pSize.toString() });
-      // setCurrentPage(page);
-      // setPageSize(pSize);
       throttledSearch(query, page, pSize);
     }
   }
@@ -42,23 +35,16 @@ export default function SearchRepository() {
     throttle((value: string, page: number, pageSize: number) => {
       setLoading(true);
       dispatch(fetchRepositories(value, page, pageSize)).then(() => setLoading(false));
-    }, 1000),
-    []
+    }, 1000), [query, currentPage, pageSize]
   );
 
-  const handleValueChange = (event: React.ChangeEvent<HTMLInputElement> | string) => {
-    let value;
-    if (typeof event !== 'string') {
-      value = event.target.value;
-    } else {
-      value = event;
-    }
-    setQuery(value);
+  const handleValueChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event?.target.value;
+    setQuery(value || '');
   };
 
 
   const handlePageSizeChange = (page: number, pageSize: number): void => {
-
     const q = searchParams.get('q');
     let searchValue = '';
     if (q && q !== '') {
@@ -66,10 +52,11 @@ export default function SearchRepository() {
     } else {
       searchValue = query
     }
+
     setSearchParams({ q: searchValue, page: page.toString(), per_page: pageSize.toString() });
-    handleSearch(searchValue, page, pageSize);
     setPageSize(pageSize);
     setCurrentPage(page);
+    handleSearch(searchValue, page, pageSize);
   }
 
   useEffect(() => {
@@ -78,13 +65,16 @@ export default function SearchRepository() {
     const page = searchParams.get('page');
     if (q && q !== '') {
       setQuery(q);
-      handleSearch(q, Number(page), Number(per_page));
+      handleSearch(q, Number(page) || currentPage, Number(per_page) || pageSize);
     }
   }, []);
 
+
   return (
     <>
+
       <StyledComponentHeader>
+
         <Row align={'middle'} gutter={32}>
           <Col span={18}>
             <h3>Search github Repositories</h3>
@@ -100,22 +90,21 @@ export default function SearchRepository() {
         <CenteredSpinner />
       ) : (
         <>
-          {totalCount &&totalCount>0 ? (
+          {items && items.length > 0 && (
             <>
               <StyledResultSortingHeader>
                 <Row align={'middle'} gutter={32}>
                   <Col span={18}>
-                    <h3>{totalCount} repository results</h3>
+                    <h3>{totalCount} repository results for <strong>'{searchParams.get('q')}'</strong></h3>
                   </Col>
                 </Row>
                 <StyledLine></StyledLine>
               </StyledResultSortingHeader>
 
-
               <RepositoryList loading={isLoading} repositories={items} />
 
               <Row gutter={16} justify="center" style={{ paddingBottom: 24 }}>
-                <Col span={12}>
+                <Col>
                   <Pagination
                     onChange={(page: number, pageSize: number) => handlePageSizeChange(page, pageSize)}
                     defaultCurrent={1}
@@ -128,10 +117,14 @@ export default function SearchRepository() {
                 </Col>
               </Row>
             </>
-          ): <p>Please search repositories...!</p>}
+          )}
+          {!error && searchParams.get('q') && !items.length && <StyledWrapper>
+            <Text> We couldn’t find any repositories matching <strong>'{searchParams.get('q')}'</strong></Text>
+          </StyledWrapper>}
+
         </>
       )}
-      {error && <div>{error}</div>}
+      {error && !loading && !totalCount && <StyledWrapper><Text>{error}</Text></StyledWrapper>}
     </>
   );
 }

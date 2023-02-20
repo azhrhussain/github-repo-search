@@ -24,7 +24,7 @@ const RepositoryListItem: React.FC<RepositoryListItemProps> = ({ repository }) =
         <StyledRepoListDetailsContainer>
           <div>
             {repository.topics.map((topic) => {
-              return <StyledTagContainer>
+              return <StyledTagContainer key={topic}>
                 <a href={`https://github.com/topics/${topic}`} title={`Topic: ${topic}`} rel="noreferrer" target="_blank">
                   <Tag color="processing">{topic}</Tag>
                 </a>
@@ -32,11 +32,11 @@ const RepositoryListItem: React.FC<RepositoryListItemProps> = ({ repository }) =
             })}
           </div>
           <div>
-            <StyleStarContainer><StarOutlined style={{ marginRight: 8 }} />{repository.stargazers_count}</StyleStarContainer>
+            <StyleStarContainer>
+              <StarOutlined style={{ marginRight: 8 }} />{repository.stargazers_count}
+            </StyleStarContainer>
             {repository.updated_at && formatTimeElapsed(repository.updated_at)}
           </div>
-
-
         </StyledRepoListDetailsContainer>
       </List.Item>
     </StyledRepoListItemBox>

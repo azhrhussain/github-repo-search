@@ -1,7 +1,7 @@
-import repositoriesReducer from './../app/pages/SearchRepository/repositoriesSlice';
 import { ThunkAction } from '@reduxjs/toolkit';
 import { Action } from '@reduxjs/toolkit';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
+import repositoriesReducer from '../app/feature/Repository/repositoriesSlice';
 
 const rootReducer = combineReducers({
   repositories: repositoriesReducer,

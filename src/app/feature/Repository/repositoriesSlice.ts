@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AppThunk } from "../../../store";
 import { Repository } from "../../../types/Repository";
+import { normalizeRepositoryResponse } from "../../../utils/normilizer";
 import { searchRepositories } from "./service";
 
 interface RepositoriesState {
@@ -23,7 +24,7 @@ export const repositoriesSlice = createSlice({
     initialState,
     reducers: {
         setRepositories: (state, action: PayloadAction<{total_count:number, items:Repository[]}>) => {
-            state.items = action.payload?.items;
+            state.items = normalizeRepositoryResponse(action.payload?.items);
             state.totalCount = action.payload.total_count;
             state.loading = false;
             state.error = null;

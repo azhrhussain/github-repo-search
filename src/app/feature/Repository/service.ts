@@ -1,11 +1,11 @@
 import axios from 'axios';
-import { Repository } from '../../../../types/Repository';
+import { Repository } from '../../../types/Repository';
+import { REPOSITORY_API_URL } from '../../../utils/constants';
 
 export interface SearchRepositoriesResponse {
   items: Repository[];
   total_count: number;
 }
-const BASE_URL = 'https://api.github.com';
 
 export const searchRepositories = async (query: string, page: number, pageSize:number): Promise<SearchRepositoriesResponse> => {
 const  params= {
@@ -13,6 +13,6 @@ const  params= {
     per_page: pageSize,
     page:page,
   };
-  const response = await axios.get<SearchRepositoriesResponse>(`${BASE_URL}/search/repositories`,{params:params});
+  const response = await axios.get<SearchRepositoriesResponse>(REPOSITORY_API_URL,{params:params});
   return response.data;
 };
