@@ -1,4 +1,3 @@
-
 # Github Repositories search!
 You can search github repositories using search; there're one routes only: 
 1. '/'  where you can search 
@@ -48,3 +47,5 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 - Sorting
 - Unit tests
 - Main layout Improvement
+
+###Note: in contributers list both are my name one is my system(git) and other github(with picture)
